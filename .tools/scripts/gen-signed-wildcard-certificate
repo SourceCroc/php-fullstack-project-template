@@ -1,0 +1,38 @@
+#!/bin/sh
+
+CERT_DIR=.certs
+
+DOMAIN=$1
+WILDCARD="*.$DOMAIN"
+
+echo ""
+echo "================================================================================="
+echo " Creating and signing certificate for $DOMAIN, $WILDCARD "
+echo "================================================================================="
+echo ""
+
+rm -f "$CERT_DIR/$DOMAIN.*"
+
+SUBJECT="C=NL/CN=LOCAL/ST=LOCAL/L=LOCAL/O=LOCAL/OU=LOCAL/emailAddress=LOCAL@LOCAL"
+openssl genrsa -out "$CERT_DIR/$DOMAIN.key" 4096
+openssl req -new -subj "/$SUBJECT" -key "$CERT_DIR/$DOMAIN.key" -out "$CERT_DIR/$DOMAIN.csr"
+
+touch "$CERT_DIR/$DOMAIN.ext"
+echo "authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = $DOMAIN # Be sure to include the domain name here because Common Name is not so commonly honoured by itself
+DNS.2 = *.$DOMAIN # Wildcard certificate enabler
+" >> "$CERT_DIR/$DOMAIN.ext"
+
+openssl x509 -req -days 825 -in "$CERT_DIR/$DOMAIN.csr" -CA "$CERT_DIR/CA.crt" -CAkey "$CERT_DIR/CA.key" -CAcreateserial -out "$CERT_DIR/$DOMAIN.crt" -sha256 -extfile "$CERT_DIR/$DOMAIN.ext"
+echo "$CERT_DIR/$DOMAIN.crt"
+rm -f "$CERT_DIR/$DOMAIN.ext" "CA.srl" "$CERT_DIR/$DOMAIN.csr"
+
+echo ""
+echo "================================================"
+echo " Succesfully created and installed certificates "
+echo "================================================"
+echo ""

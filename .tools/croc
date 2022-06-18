@@ -1,0 +1,30 @@
+#!/bin/sh
+
+if [ $# -lt 1 ]; then
+    echo "We need atleast one arg".
+    exit 1;
+fi;
+
+TOOL=$1
+shift;
+
+case $TOOL in
+    php)
+        docker compose exec app php -d memory_limit=-1 $*
+    ;;
+    composer)
+        docker compose exec app composer $*
+
+        # bundle volume fixes
+    ;;
+    run)
+        docker compose exec app ash $*
+    ;;
+    ssl)
+        .tools/scripts/gen-ca-certificates
+        .tools/scripts/gen-signed-wildcard-certificate app.local
+    ;;
+    boot)
+        docker compose up -d --force-recreate --build
+    ;;
+esac

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+SUBJECT="C=NL/CN=LOCAL/ST=LOCAL/L=LOCAL/O=LOCAL/OU=LOCAL/emailAddress=LOCAL@LOCAL"
+
+CERT_DIR=.certs
+mkdir -p $CERT_DIR
+
+rm -f "$CERT_DIR/CA.*"
+
+openssl genrsa -out "$CERT_DIR/CA.key" 4096 # generating root key
+openssl req -subj "/$SUBJECT" -x509 -new -nodes -key "$CERT_DIR/CA.key" -sha256 -days 825 -out "$CERT_DIR/CA.crt" # generating root certificate
+
+echo ""
+echo "============================================================"
+echo " We now have a valid Certificate Authority (CA) certificate "
+echo "   certificate location: .certs/CA.crt   "
+echo "============================================================"
+echo ""

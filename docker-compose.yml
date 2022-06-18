@@ -1,0 +1,84 @@
+version: '3.9'
+x-volumes: &code
+    volumes:
+        - .:/app
+        - composer-data:/home/app/.composer
+services:
+    app:
+        build:
+            context: .docker/php
+            target: dev
+            args:
+                UID: ${UID:-1000}
+                GID: ${GID:-1000}
+        user: app-user:app-group
+        environment:
+            TZ: Europe/Amsterdam
+        <<: *code
+    app-debug:
+        build:
+            context: .docker/php
+            target: dev
+            args:
+                UID: ${UID:-1000}
+                GID: ${GID:-1000}
+                XDEBUG: 'true'
+        user: app-user:app-group
+        environment:
+            TZ: Europe/Amsterdam
+        <<: *code
+        extra_hosts:
+            - host.docker.internal:host-gateway
+    proxy:
+        build:
+            context: .docker/nginx
+            args:
+                UID: ${UID:-1000}
+                GID: ${GID:-1000}
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - .:/app
+            - .docker/nginx/sites:/etc/nginx/conf.d:ro
+            - .certs:/etc/ssl/app:ro
+    database:
+        image: mariadb:latest
+        environment:
+            MARIADB_ROOT_PASSWORD: password
+            MARIADB_DATABASE: app-db
+            MARIADB_USER: app-user
+            MARIADB_PASSWORD: app-pass
+            TZ: Europe/Amsterdam
+        ports:
+            - '3306:3306'
+        volumes:
+            -   database-data:/var/lib/mysql;
+    cache:
+        image: redis:latest
+        volumes:
+            - cache-data:/data
+        environment:
+            TZ: Europe/Amsterdam
+    cache-gui:
+        image: rediscommander/redis-commander:latest
+        environment:
+            REDIS_HOSTS: 'local:cache:6379'
+        ports:
+            - '6379:8081'
+    storage:
+        image: minio/minio
+        ports:
+            - '9000:9000'
+        command: server /data --console-address ":1024"
+        volumes:
+            - storage-data:/data
+volumes:
+    cache-data:
+        external: false
+    composer-data:
+        external: false
+    database-data:
+        external: false
+    storage-data:
+        external: false
