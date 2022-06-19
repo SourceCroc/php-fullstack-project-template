@@ -1,0 +1,9 @@
+{
+    "name": "my/app",
+    "type": "project",
+    "license": "GPLv3",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "sourcecroc/php-code-style": "^0.1.1"
+    }
+}
