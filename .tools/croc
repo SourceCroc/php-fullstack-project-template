@@ -27,4 +27,7 @@ case $TOOL in
     boot)
         docker compose up -d --force-recreate --build
     ;;
+    lint)
+        docker compose exec app php -d memory_limit=-1 vendor/bin/phpcs -s --standard=phpcs-ruleset.xml .
+    ;;
 esac
