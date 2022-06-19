@@ -3,5 +3,5 @@
     <config name="installed_paths" value="vendor/sourcecroc/php-code-style/src" />
     <rule ref="SourceCrocStandard" />
 
-    <exclude-pattern>*/vendor</exclude-pattern>
+    <exclude-pattern>*/(vendor|var)</exclude-pattern>
 </ruleset>
