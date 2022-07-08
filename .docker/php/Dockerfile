@@ -1,9 +1,9 @@
-ARG UID=1000
-ARG GID=1000
+ARG UID
+ARG GID
 
 FROM php:8-fpm-alpine as base
-ARG UID=${UID}
-ARG GID=${GID}
+ARG UID=${UID:-1000}
+ARG GID=${GID:-1000}
 
 WORKDIR /app
 
@@ -42,3 +42,10 @@ RUN if [ $XDEBUG = "true" ]; then \
     fi; \
     # Set system timezone to Europe/Amsterdam
     rm /etc/localtime; ln -s /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
+
+FROM base as builder
+
+COPY . .
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+RUN composer install
