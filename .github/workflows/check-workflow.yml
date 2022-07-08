@@ -29,3 +29,18 @@ jobs:
               run: |
                 cd /app
                 composer lint
+    test:
+        needs: [ run-build ]
+        runs-on: ubuntu-latest
+        permissions:
+            packages: read
+        container:
+            image: ${{ needs.run-build.outputs.imageRef }}
+            credentials:
+                username: ${{ github.repository_owner }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+        steps:
+            - name: Run Tests
+              run: |
+                  cd /app
+                  composer test
